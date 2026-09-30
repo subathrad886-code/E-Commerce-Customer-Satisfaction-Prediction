@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Dashboard - SUBATHRA D</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="{{ url_for('home') }}" class="brand-wrapper">
+        <div class="brand-icon">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div class="brand-text">
+          <h1>Customer Satisfaction AI</h1>
+          <span>SUBATHRA D &bull; B.Sc Data Analytics Project</span>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('home') }}" class="nav-link"><i class="fa-solid fa-wand-magic-sparkles"></i> Predict</a></li>
+        <li><a href="{{ url_for('dashboard') }}" class="nav-link active"><i class="fa-solid fa-chart-pie"></i> Analytics Dashboard</a></li>
+        <li><a href="{{ url_for('history') }}" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> History</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Header -->
+  <header class="hero-banner" style="padding: 2.5rem 1.5rem;">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fa-solid fa-chart-pie"></i> Executive Intelligence Dashboard
+      </div>
+      <h1 class="hero-title" style="font-size: 2.1rem;">Customer Experience Analytics</h1>
+      <p class="hero-subtitle">
+        Real-time statistical synthesis of customer predictions, key performance indicators, 
+        and model comparison benchmarks.
+      </p>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+
+    <!-- KPI Summary Metrics Grid -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <span class="metric-label">Total Predictions</span>
+        <div class="metric-value">{{ total_predictions }}</div>
+        <span class="metric-sub">Stored in SQLite</span>
+      </div>
+
+      <div class="metric-card accent-high">
+        <span class="metric-label">High Satisfaction</span>
+        <div class="metric-value" style="color: var(--high-sat);">{{ high_count }}</div>
+        <span class="metric-sub">{{ high_pct }}% of all evaluations</span>
+      </div>
+
+      <div class="metric-card accent-med">
+        <span class="metric-label">Medium Satisfaction</span>
+        <div class="metric-value" style="color: var(--med-sat);">{{ medium_count }}</div>
+        <span class="metric-sub">{{ medium_pct }}% of all evaluations</span>
+      </div>
+
+      <div class="metric-card accent-low">
+        <span class="metric-label">Low (At-Risk)</span>
+        <div class="metric-value" style="color: var(--low-sat);">{{ low_count }}</div>
+        <span class="metric-sub">{{ low_pct }}% of all evaluations</span>
+      </div>
+
+      <div class="metric-card accent-cyan">
+        <span class="metric-label">Avg. Purchase Amount</span>
+        <div class="metric-value" style="font-size: 1.6rem;">Rs. {{ "{:,.0f}".format(avg_purchase) }}</div>
+        <span class="metric-sub">Per evaluated order</span>
+      </div>
+
+      <div class="metric-card">
+        <span class="metric-label">Avg. Delivery Time</span>
+        <div class="metric-value" style="font-size: 1.6rem;">{{ "%.1f"|format(avg_delivery) }} Days</div>
+        <span class="metric-sub">Order turnaround</span>
+      </div>
+
+      <div class="metric-card">
+        <span class="metric-label">Avg. Website Rating</span>
+        <div class="metric-value" style="font-size: 1.6rem;">{{ "%.2f"|format(avg_website_rating) }} / 5</div>
+        <span class="metric-sub">Digital portal experience</span>
+      </div>
+    </div>
+
+    <!-- Dashboard Navigation Tabs -->
+    <div class="card">
+      <div class="card-header" style="padding-bottom: 0;">
+        <div class="tabs-header" style="margin-bottom: 0; border-bottom: none;">
+          <button class="tab-btn active" data-tab="liveChartsTab">
+            <i class="fa-solid fa-chart-simple"></i> Live Predictions Analytics
+          </button>
+          <button class="tab-btn" data-tab="modelTab">
+            <i class="fa-solid fa-microchip"></i> ML Models Evaluation
+          </button>
+          <button class="tab-btn" data-tab="edaTab">
+            <i class="fa-solid fa-images"></i> Exploratory Data Analysis (EDA)
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        
+        <!-- TAB 1: LIVE CHARTS (CHART.JS) -->
+        <div id="liveChartsTab" class="tab-pane active">
+          
+          <div class="charts-grid">
+            <!-- Chart 1: Satisfaction Distribution -->
+            <div class="chart-card">
+              <div class="chart-title">
+                <span><i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i> 1. Satisfaction Distribution</span>
+                <span class="label-hint">Doughnut Breakdown</span>
+              </div>
+              <div class="chart-container">
+                <canvas id="satisfactionDonutChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 2: Satisfaction by Product Category -->
+            <div class="chart-card">
+              <div class="chart-title">
+                <span><i class="fa-solid fa-boxes-stacked" style="color: var(--accent);"></i> 2. Satisfaction by Product Category</span>
+                <span class="label-hint">Category Distribution</span>
+              </div>
+              <div class="chart-container">
+                <canvas id="categoryBarChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 3: Satisfaction vs Delivery Time -->
+            <div class="chart-card">
+              <div class="chart-title">
+                <span><i class="fa-solid fa-truck-ramp-box" style="color: #f59e0b;"></i> 3. Satisfaction vs Delivery Time</span>
+                <span class="label-hint">Avg Days per Category</span>
+              </div>
+              <div class="chart-container">
+                <canvas id="deliveryChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 4: Satisfaction vs Purchase Amount -->
+            <div class="chart-card">
+              <div class="chart-title">
+                <span><i class="fa-solid fa-wallet" style="color: #10b981;"></i> 4. Satisfaction vs Purchase Amount</span>
+                <span class="label-hint">Avg Spending per Category (Rs.)</span>
+              </div>
+              <div class="chart-container">
+                <canvas id="purchaseChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 5: Satisfaction by Gender -->
+            <div class="chart-card" style="grid-column: 1 / -1;">
+              <div class="chart-title">
+                <span><i class="fa-solid fa-users" style="color: #8b5cf6;"></i> 5. Satisfaction Breakdown by Gender</span>
+                <span class="label-hint">Demographic View</span>
+              </div>
+              <div class="chart-container" style="height: 320px;">
+                <canvas id="genderChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- TAB 2: ML MODEL EVALUATION -->
+        <div id="modelTab" class="tab-pane">
+          
+          <div style="margin-bottom: 2rem;">
+            <h3 style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">
+              Algorithm Performance Comparison
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 1.5rem;">
+              Two classification models were trained and benchmarked on an 80/20 stratified split of 1,000 customer records.
+            </p>
+
+            <!-- Metrics Comparison Table -->
+            <div class="table-responsive" style="margin-bottom: 2rem;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Algorithm</th>
+                    <th>Accuracy</th>
+                    <th>Precision (Weighted)</th>
+                    <th>Recall (Weighted)</th>
+                    <th>F1-Score (Weighted)</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for algo_name, m in model_metrics.items() %}
+                  <tr>
+                    <td><strong>{{ algo_name }}</strong></td>
+                    <td>{{ m.accuracy }}%</td>
+                    <td>{{ m.precision_weighted }}%</td>
+                    <td>{{ m.recall_weighted }}%</td>
+                    <td><strong>{{ m.f1_weighted }}%</strong></td>
+                    <td>
+                      {% if algo_name == best_model_name %}
+                      <span class="badge badge-pill-high"><i class="fa-solid fa-trophy"></i> Best Selected Model</span>
+                      {% else %}
+                      <span class="badge" style="background: #f1f5f9; color: #475569;">Benchmark</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Model Evaluation Graphics -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 1.5rem;">
+              <div class="chart-card">
+                <div class="chart-title">Confusion Matrices Comparison</div>
+                <img src="{{ url_for('static', filename='eda/confusion_matrix_comparison.png') }}" alt="Confusion Matrices" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">Model Performance Comparison Bar</div>
+                <img src="{{ url_for('static', filename='eda/model_comparison_bar.png') }}" alt="Model Comparison Bar" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- TAB 3: EXPLORATORY DATA ANALYSIS (EDA) GALLERY -->
+        <div id="edaTab" class="tab-pane">
+          <div style="margin-bottom: 1.5rem;">
+            <h3 style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700;">
+              Dataset Exploratory Data Analysis (EDA) Gallery
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.92rem;">
+              High-resolution visualizations generated by <code>scripts/eda.py</code> using Matplotlib and Seaborn.
+            </p>
+          </div>
+
+          <div class="eda-grid">
+            <div class="eda-item">
+              <img src="{{ url_for('static', filename='eda/satisfaction_distribution.png') }}" alt="Satisfaction Distribution">
+              <div class="eda-caption">1. Satisfaction Category Distribution</div>
+            </div>
+            <div class="eda-item">
+              <img src="{{ url_for('static', filename='eda/age_distribution.png') }}" alt="Age Distribution">
+              <div class="eda-caption">2. Customer Age Distribution</div>
+            </div>
+            <div class="eda-item">
+              <img src="{{ url_for('static', filename='eda/purchase_amount_distribution.png') }}" alt="Purchase Amount Distribution">
+              <div class="eda-caption">3. Purchase Amount Distribution</div>
+            </div>
+            <div class="eda-item">
+              <img src="{{ url_for('static', filename='eda/delivery_time_distribution.png') }}" alt="Delivery Time Distribution">
+              <div class="eda-caption">4. Delivery Time Distribution (Days)</div>
+            </div>
+            <div class="eda-item">
+              <img src="{{ url_for('static', filename='eda/satisfaction_vs_category.png') }}" alt="Satisfaction vs Category">
+              <div class="eda-caption">5. Satisfaction vs Product Category</div>
+            </div>
+            <div class="eda-item">
+              <img src="{{ url_for('static', filename='eda/satisfaction_vs_delivery.png') }}" alt="Satisfaction vs Delivery Time">
+              <div class="eda-caption">6. Satisfaction vs Delivery Time</div>
+            </div>
+            <div class="eda-item">
+              <img src="{{ url_for('static', filename='eda/satisfaction_vs_purchase.png') }}" alt="Satisfaction vs Purchase Amount">
+              <div class="eda-caption">7. Satisfaction vs Purchase Amount</div>
+            </div>
+            <div class="eda-item">
+              <img src="{{ url_for('static', filename='eda/satisfaction_vs_service.png') }}" alt="Satisfaction vs Service Interaction">
+              <div class="eda-caption">8. Satisfaction vs Service Interaction</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>
+      <strong>SUBATHRA D &ndash; E-Commerce Customer Satisfaction Prediction</strong> &bull;
+      B.Sc Computer Science with Data Analytics Mini-Project
+    </p>
+  </footer>
+
+  <!-- Pass Backend JSON data safely into JS for Chart.js initialization -->
+  <script>
+    const chartData = {{ chart_payload | tojson | safe }};
+
+    document.addEventListener("DOMContentLoaded", function() {
+      // 1. Satisfaction Donut Chart
+      const donutCtx = document.getElementById('satisfactionDonutChart');
+      if (donutCtx && chartData.distribution) {
+        new Chart(donutCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['High Satisfaction', 'Medium Satisfaction', 'Low Satisfaction'],
+            datasets: [{
+              data: [
+                chartData.distribution.High || 0,
+                chartData.distribution.Medium || 0,
+                chartData.distribution.Low || 0
+              ],
+              backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom' }
+            }
+          }
+        });
+      }
+
+      // 2. Category Bar Chart
+      const catCtx = document.getElementById('categoryBarChart');
+      if (catCtx && chartData.by_category) {
+        new Chart(catCtx, {
+          type: 'bar',
+          data: {
+            labels: chartData.by_category.categories,
+            datasets: [
+              {
+                label: 'High',
+                data: chartData.by_category.high,
+                backgroundColor: '#10b981'
+              },
+              {
+                label: 'Medium',
+                data: chartData.by_category.medium,
+                backgroundColor: '#f59e0b'
+              },
+              {
+                label: 'Low',
+                data: chartData.by_category.low,
+                backgroundColor: '#ef4444'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { stacked: true },
+              y: { stacked: true, beginAtZero: true }
+            },
+            plugins: {
+              legend: { position: 'bottom' }
+            }
+          }
+        });
+      }
+
+      // 3. Delivery Time Chart
+      const delCtx = document.getElementById('deliveryChart');
+      if (delCtx && chartData.avg_delivery_by_sat) {
+        new Chart(delCtx, {
+          type: 'bar',
+          data: {
+            labels: ['High', 'Medium', 'Low'],
+            datasets: [{
+              label: 'Avg Delivery Days',
+              data: [
+                chartData.avg_delivery_by_sat.High || 0,
+                chartData.avg_delivery_by_sat.Medium || 0,
+                chartData.avg_delivery_by_sat.Low || 0
+              ],
+              backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: true, title: { display: true, text: 'Days' } }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
+
+      // 4. Purchase Amount Chart
+      const purCtx = document.getElementById('purchaseChart');
+      if (purCtx && chartData.avg_purchase_by_sat) {
+        new Chart(purCtx, {
+          type: 'bar',
+          data: {
+            labels: ['High', 'Medium', 'Low'],
+            datasets: [{
+              label: 'Avg Purchase Amount (Rs.)',
+              data: [
+                chartData.avg_purchase_by_sat.High || 0,
+                chartData.avg_purchase_by_sat.Medium || 0,
+                chartData.avg_purchase_by_sat.Low || 0
+              ],
+              backgroundColor: ['#3b82f6', '#8b5cf6', '#06b6d4'],
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: true, title: { display: true, text: 'Amount (Rs.)' } }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
+
+      // 5. Gender Stacked Chart
+      const genCtx = document.getElementById('genderChart');
+      if (genCtx && chartData.by_gender) {
+        new Chart(genCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Female', 'Male', 'Other'],
+            datasets: [
+              {
+                label: 'High',
+                data: [
+                  chartData.by_gender.Female ? chartData.by_gender.Female.High || 0 : 0,
+                  chartData.by_gender.Male ? chartData.by_gender.Male.High || 0 : 0,
+                  chartData.by_gender.Other ? chartData.by_gender.Other.High || 0 : 0
+                ],
+                backgroundColor: '#10b981'
+              },
+              {
+                label: 'Medium',
+                data: [
+                  chartData.by_gender.Female ? chartData.by_gender.Female.Medium || 0 : 0,
+                  chartData.by_gender.Male ? chartData.by_gender.Male.Medium || 0 : 0,
+                  chartData.by_gender.Other ? chartData.by_gender.Other.Medium || 0 : 0
+                ],
+                backgroundColor: '#f59e0b'
+              },
+              {
+                label: 'Low',
+                data: [
+                  chartData.by_gender.Female ? chartData.by_gender.Female.Low || 0 : 0,
+                  chartData.by_gender.Male ? chartData.by_gender.Male.Low || 0 : 0,
+                  chartData.by_gender.Other ? chartData.by_gender.Other.Low || 0 : 0
+                ],
+                backgroundColor: '#ef4444'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { stacked: true },
+              y: { stacked: true, beginAtZero: true }
+            },
+            plugins: { legend: { position: 'bottom' } }
+          }
+        });
+      }
+
+    });
+  </script>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

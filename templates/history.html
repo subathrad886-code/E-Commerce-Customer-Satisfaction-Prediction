@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prediction History - SUBATHRA D</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="{{ url_for('home') }}" class="brand-wrapper">
+        <div class="brand-icon">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div class="brand-text">
+          <h1>Customer Satisfaction AI</h1>
+          <span>SUBATHRA D &bull; B.Sc Data Analytics Project</span>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('home') }}" class="nav-link"><i class="fa-solid fa-wand-magic-sparkles"></i> Predict</a></li>
+        <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fa-solid fa-chart-pie"></i> Analytics Dashboard</a></li>
+        <li><a href="{{ url_for('history') }}" class="nav-link active"><i class="fa-solid fa-clock-rotate-left"></i> History</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Header -->
+  <header class="hero-banner" style="padding: 2.2rem 1.5rem;">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fa-solid fa-database"></i> SQLite Database Records
+      </div>
+      <h1 class="hero-title" style="font-size: 2rem;">Customer Prediction History</h1>
+      <p class="hero-subtitle">
+        Audit log of all processed customer satisfaction predictions stored securely in SQLite.
+      </p>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">
+            <i class="fa-solid fa-table-list" style="color: var(--primary);"></i>
+            Saved Predictions Table
+          </h2>
+          <p class="card-subtitle">Showing all live prediction records stored in <code>database/customer_satisfaction.db</code></p>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+          <span class="badge" id="recordsCount" style="background: var(--primary-light); color: var(--primary); font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+            {{ records|length }} records
+          </span>
+          <a href="{{ url_for('home') }}" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+            <i class="fa-solid fa-plus"></i> New Prediction
+          </a>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Search and Filter Bar -->
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; justify-content: space-between;">
+          <div style="flex: 1; min-width: 250px;">
+            <input type="text" id="historySearch" class="form-control" placeholder="Search by category, payment, gender, satisfaction...">
+          </div>
+          <div style="min-width: 200px;">
+            <select id="filterSatisfaction" class="form-control">
+              <option value="ALL">Filter by Satisfaction (All)</option>
+              <option value="High">High Satisfaction Only</option>
+              <option value="Medium">Medium Satisfaction Only</option>
+              <option value="Low">Low Satisfaction Only</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#ID</th>
+                <th>Timestamp</th>
+                <th>Demographics</th>
+                <th>Product Category</th>
+                <th>Amount (Rs.)</th>
+                <th>Delivery</th>
+                <th>Ratings</th>
+                <th>Loyalty / Disc</th>
+                <th>Predicted Satisfaction</th>
+                <th>Confidence</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              {% if records %}
+                {% for r in records %}
+                <tr data-satisfaction="{{ r.predicted_satisfaction }}">
+                  <td><strong>#{{ r.id }}</strong></td>
+                  <td style="font-size: 0.82rem; color: var(--text-muted);">{{ r.created_at }}</td>
+                  <td>{{ r.customer_age }} yrs, {{ r.gender }}</td>
+                  <td><span style="font-weight: 600;">{{ r.product_category }}</span></td>
+                  <td>Rs. {{ "{:,.2f}".format(r.purchase_amount) }}</td>
+                  <td>{{ r.delivery_time }} days</td>
+                  <td>
+                    <span title="Service Rating">S: {{ r.service_interaction }}/5</span> &bull; 
+                    <span title="Website Rating">W: {{ r.website_rating }}/5</span>
+                  </td>
+                  <td>{{ r.previous_orders }} orders &bull; Disc: {{ r.discount_used }}</td>
+                  <td>
+                    {% if r.predicted_satisfaction == 'High' %}
+                    <span class="badge badge-pill-high"><i class="fa-solid fa-face-smile"></i> High</span>
+                    {% elif r.predicted_satisfaction == 'Medium' %}
+                    <span class="badge badge-pill-medium"><i class="fa-solid fa-face-meh"></i> Medium</span>
+                    {% else %}
+                    <span class="badge badge-pill-low"><i class="fa-solid fa-triangle-exclamation"></i> Low</span>
+                    {% endif %}
+                  </td>
+                  <td><strong>{{ r.prediction_probability }}%</strong></td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="10" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                    <i class="fa-solid fa-inbox" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                    No predictions found in the database. Go to the <a href="{{ url_for('home') }}">Predict Page</a> to make your first evaluation!
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>
+      <strong>SUBATHRA D &ndash; E-Commerce Customer Satisfaction Prediction</strong> &bull;
+      B.Sc Computer Science with Data Analytics Mini-Project
+    </p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

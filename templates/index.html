@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SUBATHRA D - E-Commerce Customer Satisfaction Prediction</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="{{ url_for('home') }}" class="brand-wrapper">
+        <div class="brand-icon">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div class="brand-text">
+          <h1>Customer Satisfaction AI</h1>
+          <span>SUBATHRA D &bull; B.Sc Data Analytics Project</span>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('home') }}" class="nav-link active"><i class="fa-solid fa-wand-magic-sparkles"></i> Predict</a></li>
+        <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fa-solid fa-chart-pie"></i> Analytics Dashboard</a></li>
+        <li><a href="{{ url_for('history') }}" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> History</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-banner">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fa-solid fa-brain"></i> Machine Learning Mini-Project
+      </div>
+      <h1 class="hero-title">E-Commerce Customer Satisfaction Prediction</h1>
+      <p class="hero-subtitle">
+        Predict customer satisfaction levels (Low, Medium, High) in real time using 
+        multi-attribute behavioural, transactional, and service data.
+      </p>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    
+    {% if error_msg %}
+    <div class="alert-box alert-error">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <div>{{ error_msg }}</div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">
+            <i class="fa-solid fa-user-pen" style="color: var(--primary);"></i>
+            Customer & Order Information
+          </h2>
+          <p class="card-subtitle">Fill in the order attributes below to evaluate customer experience and predict satisfaction.</p>
+        </div>
+        <span class="student-tag">Student: SUBATHRA D</span>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Active Model Pill -->
+        <div class="model-status-bar">
+          <div class="model-info-pill">
+            <span class="status-dot"></span>
+            <span>Production Model: <strong>{{ model_name or 'Logistic Regression' }}</strong></span>
+          </div>
+          <div class="model-info-pill">
+            <i class="fa-solid fa-bullseye" style="color: var(--primary);"></i>
+            <span>Test Accuracy: <strong>{{ model_accuracy or '76.0' }}%</strong></span>
+          </div>
+          <div class="model-info-pill">
+            <i class="fa-solid fa-database" style="color: var(--accent);"></i>
+            <span>Target Categories: <strong>Low, Medium, High</strong></span>
+          </div>
+        </div>
+
+        <!-- Quick Demo Presets -->
+        <div class="quick-fill-container">
+          <span class="quick-fill-label"><i class="fa-solid fa-bolt"></i> Quick Demo Presets:</span>
+          <button type="button" class="btn-sample" onclick="fillSampleData('high')">
+            <i class="fa-solid fa-face-smile" style="color: #10b981;"></i> High Satisfaction Sample
+          </button>
+          <button type="button" class="btn-sample" onclick="fillSampleData('medium')">
+            <i class="fa-solid fa-face-meh" style="color: #f59e0b;"></i> Medium Satisfaction Sample
+          </button>
+          <button type="button" class="btn-sample" onclick="fillSampleData('low')">
+            <i class="fa-solid fa-face-frown" style="color: #ef4444;"></i> At-Risk (Low) Sample
+          </button>
+        </div>
+
+        <!-- Prediction Form -->
+        <form action="{{ url_for('predict') }}" method="POST" id="predictionForm">
+          
+          <!-- Section 1: Customer Demographics -->
+          <h3 class="form-section-title">
+            <i class="fa-solid fa-id-card"></i> 1. Customer Demographics
+          </h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="customer_age" class="form-label">
+                Customer Age
+                <span class="label-hint">18 - 80 yrs</span>
+              </label>
+              <input type="number" id="customer_age" name="customer_age" class="form-control" min="18" max="85" value="35" required>
+            </div>
+
+            <div class="form-group">
+              <label for="gender" class="form-label">Gender</label>
+              <select id="gender" name="gender" class="form-control" required>
+                <option value="Female">Female</option>
+                <option value="Male" selected>Male</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Section 2: Product & Transaction Details -->
+          <h3 class="form-section-title">
+            <i class="fa-solid fa-bag-shopping"></i> 2. Product & Transaction Details
+          </h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="product_category" class="form-label">Product Category</label>
+              <select id="product_category" name="product_category" class="form-control" required>
+                <option value="Electronics" selected>Electronics</option>
+                <option value="Fashion">Fashion</option>
+                <option value="Home & Kitchen">Home & Kitchen</option>
+                <option value="Beauty & Personal Care">Beauty & Personal Care</option>
+                <option value="Books & Stationery">Books & Stationery</option>
+                <option value="Sports & Fitness">Sports & Fitness</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="purchase_amount" class="form-label">
+                Purchase Amount (Rs.)
+                <span class="label-hint">Total bill value</span>
+              </label>
+              <input type="number" step="0.01" id="purchase_amount" name="purchase_amount" class="form-control" min="100" max="100000" value="8500.00" required>
+            </div>
+
+            <div class="form-group">
+              <label for="payment_method" class="form-label">Payment Method</label>
+              <select id="payment_method" name="payment_method" class="form-control" required>
+                <option value="UPI" selected>UPI</option>
+                <option value="Credit Card">Credit Card</option>
+                <option value="Debit Card">Debit Card</option>
+                <option value="Net Banking">Net Banking</option>
+                <option value="Cash on Delivery">Cash on Delivery</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="discount_used" class="form-label">Discount Applied?</label>
+              <select id="discount_used" name="discount_used" class="form-control" required>
+                <option value="Yes" selected>Yes (Coupon / Offer applied)</option>
+                <option value="No">No (Full price)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Section 3: Delivery & Service Experience -->
+          <h3 class="form-section-title">
+            <i class="fa-solid fa-truck-fast"></i> 3. Delivery & Service Interaction
+          </h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="delivery_time" class="form-label">
+                Delivery Time (Days)
+                <span class="label-hint">Order to doorstep</span>
+              </label>
+              <input type="number" id="delivery_time" name="delivery_time" class="form-control" min="1" max="25" value="3" required>
+            </div>
+
+            <div class="form-group">
+              <label for="service_interaction" class="form-label">
+                Service Interaction Rating
+                <span class="label-hint">1 (Poor) - 5 (Excellent)</span>
+              </label>
+              <select id="service_interaction" name="service_interaction" class="form-control" required>
+                <option value="5" selected>5 - Excellent Support</option>
+                <option value="4">4 - Good Support</option>
+                <option value="3">3 - Average Support</option>
+                <option value="2">2 - Below Average</option>
+                <option value="1">1 - Very Poor / Unhelpful</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="website_rating" class="form-label">
+                Website Experience Rating
+                <span class="label-hint">UI / App Score (1-5)</span>
+              </label>
+              <select id="website_rating" name="website_rating" class="form-control" required>
+                <option value="5">5 - Outstanding</option>
+                <option value="4" selected>4 - Very Good</option>
+                <option value="3">3 - Satisfactory</option>
+                <option value="2">2 - Clunky / Slow</option>
+                <option value="1">1 - Frequent Bugs</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="return_requested" class="form-label">Return Requested?</label>
+              <select id="return_requested" name="return_requested" class="form-control" required>
+                <option value="No" selected>No (Product kept)</option>
+                <option value="Yes">Yes (Requested return/refund)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Section 4: Customer Loyalty & Engagement -->
+          <h3 class="form-section-title">
+            <i class="fa-solid fa-award"></i> 4. Loyalty & Engagement Profile
+          </h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="previous_orders" class="form-label">
+                Previous Orders Count
+                <span class="label-hint">Order history count</span>
+              </label>
+              <input type="number" id="previous_orders" name="previous_orders" class="form-control" min="0" max="60" value="6" required>
+            </div>
+
+            <div class="form-group">
+              <label for="order_frequency" class="form-label">Order Frequency</label>
+              <select id="order_frequency" name="order_frequency" class="form-control" required>
+                <option value="Weekly">Weekly (Frequent buyer)</option>
+                <option value="Bi-weekly">Bi-weekly</option>
+                <option value="Monthly" selected>Monthly (Regular buyer)</option>
+                <option value="Rarely">Rarely (Occasional buyer)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-actions">
+            <button type="reset" class="btn btn-secondary">
+              <i class="fa-solid fa-rotate-left"></i> Reset Form
+            </button>
+            <button type="submit" class="btn btn-primary" id="predictBtn">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Predict Customer Satisfaction
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>
+      <strong>SUBATHRA D &ndash; E-Commerce Customer Satisfaction Prediction</strong> &bull;
+      B.Sc Computer Science with Data Analytics Mini-Project
+    </p>
+    <p style="margin-top: 0.3rem; font-size: 0.8rem; color: var(--text-light);">
+      Powered by Python, Scikit-learn, Flask, SQLite, and Chart.js
+    </p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

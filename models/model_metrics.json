@@ -1,0 +1,92 @@
+{
+    "best_model": "Logistic Regression",
+    "metrics": {
+        "Logistic Regression": {
+            "accuracy": 76.0,
+            "precision_weighted": 76.44,
+            "recall_weighted": 76.0,
+            "f1_weighted": 76.17,
+            "precision_macro": 76.52,
+            "recall_macro": 76.01,
+            "f1_macro": 76.22,
+            "confusion_matrix": [
+                [
+                    49,
+                    15,
+                    0
+                ],
+                [
+                    11,
+                    47,
+                    10
+                ],
+                [
+                    1,
+                    11,
+                    56
+                ]
+            ]
+        },
+        "Random Forest": {
+            "accuracy": 64.5,
+            "precision_weighted": 64.03,
+            "recall_weighted": 64.5,
+            "f1_weighted": 64.24,
+            "precision_macro": 64.11,
+            "recall_macro": 64.61,
+            "f1_macro": 64.34,
+            "confusion_matrix": [
+                [
+                    45,
+                    18,
+                    1
+                ],
+                [
+                    21,
+                    31,
+                    16
+                ],
+                [
+                    0,
+                    15,
+                    53
+                ]
+            ]
+        }
+    },
+    "classes": [
+        "Low",
+        "Medium",
+        "High"
+    ],
+    "numerical_cols": [
+        "customer_age",
+        "purchase_amount",
+        "delivery_time",
+        "service_interaction",
+        "previous_orders",
+        "website_rating"
+    ],
+    "categorical_cols": [
+        "gender",
+        "product_category",
+        "discount_used",
+        "payment_method",
+        "return_requested",
+        "order_frequency"
+    ],
+    "feature_order": [
+        "customer_age",
+        "gender",
+        "product_category",
+        "purchase_amount",
+        "delivery_time",
+        "service_interaction",
+        "previous_orders",
+        "discount_used",
+        "payment_method",
+        "website_rating",
+        "return_requested",
+        "order_frequency"
+    ]
+}

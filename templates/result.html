@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prediction Result - SUBATHRA D</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="{{ url_for('home') }}" class="brand-wrapper">
+        <div class="brand-icon">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div class="brand-text">
+          <h1>Customer Satisfaction AI</h1>
+          <span>SUBATHRA D &bull; B.Sc Data Analytics Project</span>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('home') }}" class="nav-link"><i class="fa-solid fa-wand-magic-sparkles"></i> Predict</a></li>
+        <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fa-solid fa-chart-pie"></i> Analytics Dashboard</a></li>
+        <li><a href="{{ url_for('history') }}" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> History</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Header -->
+  <header class="hero-banner" style="padding: 2.2rem 1.5rem;">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fa-solid fa-check-circle"></i> AI Prediction Completed & Saved
+      </div>
+      <h1 class="hero-title" style="font-size: 1.9rem;">Customer Satisfaction Assessment</h1>
+      <p class="hero-subtitle">Record ID #{{ record_id }} successfully stored in SQLite database.</p>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    <div class="card">
+      <div class="card-body result-card">
+        
+        <p style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+          Predicted Customer Satisfaction Category
+        </p>
+
+        <!-- Dynamic Badge -->
+        {% if prediction == 'High' %}
+        <div class="result-badge-huge badge-high">
+          <i class="fa-solid fa-face-smile"></i>
+          <span>HIGH SATISFACTION</span>
+        </div>
+        <p style="color: #065f46; font-weight: 600; max-width: 520px; margin: 0 auto 1.5rem;">
+          The customer has experienced positive service, fast delivery, and friction-free purchasing. They are highly likely to become a loyal repeat buyer.
+        </p>
+        {% elif prediction == 'Medium' %}
+        <div class="result-badge-huge badge-medium">
+          <i class="fa-solid fa-face-meh"></i>
+          <span>MEDIUM SATISFACTION</span>
+        </div>
+        <p style="color: #92400e; font-weight: 600; max-width: 520px; margin: 0 auto 1.5rem;">
+          The customer experience was average or neutral. Targeted engagement, promotional coupons, or post-purchase follow-up can convert them into a delighted customer.
+        </p>
+        {% else %}
+        <div class="result-badge-huge badge-low">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>LOW SATISFACTION (AT RISK)</span>
+        </div>
+        <p style="color: #991b1b; font-weight: 600; max-width: 520px; margin: 0 auto 1.5rem;">
+          Warning: Immediate customer retention action is recommended. Common friction points include delayed delivery, low service support, or product return requests.
+        </p>
+        {% endif %}
+
+        <!-- Probability Meter -->
+        <div class="probability-meter-wrapper">
+          <div class="meter-header">
+            <span>Model Confidence Score</span>
+            <span style="font-weight: 700; color: var(--text-main);">{{ confidence }}%</span>
+          </div>
+          <div class="progress-bar-bg">
+            {% if prediction == 'High' %}
+            <div class="progress-bar-fill fill-high" style="width: {{ confidence }}%;"></div>
+            {% elif prediction == 'Medium' %}
+            <div class="progress-bar-fill fill-medium" style="width: {{ confidence }}%;"></div>
+            {% else %}
+            <div class="progress-bar-fill fill-low" style="width: {{ confidence }}%;"></div>
+            {% endif %}
+          </div>
+          
+          {% if probabilities %}
+          <div style="display: flex; justify-content: space-between; margin-top: 0.6rem; font-size: 0.78rem; color: var(--text-muted);">
+            <span>Low: <strong>{{ probabilities.Low }}%</strong></span>
+            <span>Medium: <strong>{{ probabilities.Medium }}%</strong></span>
+            <span>High: <strong>{{ probabilities.High }}%</strong></span>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.5rem;">
+          <a href="{{ url_for('home') }}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Predict Another Customer
+          </a>
+          <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+            <i class="fa-solid fa-chart-pie"></i> View Analytics Dashboard
+          </a>
+          <a href="{{ url_for('history') }}" class="btn btn-secondary">
+            <i class="fa-solid fa-clock-rotate-left"></i> View History
+          </a>
+        </div>
+
+        <!-- Submitted Customer Details Table -->
+        <div style="max-width: 760px; margin: 0 auto; text-align: left;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+            <i class="fa-solid fa-clipboard-list" style="color: var(--primary);"></i> Evaluated Customer Attributes
+          </h3>
+          
+          <table class="customer-summary-table">
+            <tbody>
+              <tr>
+                <th>Customer Age</th>
+                <td>{{ customer.customer_age }} years</td>
+                <th>Gender</th>
+                <td>{{ customer.gender }}</td>
+              </tr>
+              <tr>
+                <th>Product Category</th>
+                <td>{{ customer.product_category }}</td>
+                <th>Purchase Amount</th>
+                <td>Rs. {{ "{:,.2f}".format(customer.purchase_amount) }}</td>
+              </tr>
+              <tr>
+                <th>Delivery Time</th>
+                <td>{{ customer.delivery_time }} days</td>
+                <th>Service Interaction</th>
+                <td>{{ customer.service_interaction }} / 5</td>
+              </tr>
+              <tr>
+                <th>Previous Orders</th>
+                <td>{{ customer.previous_orders }} orders</td>
+                <th>Order Frequency</th>
+                <td>{{ customer.order_frequency }}</td>
+              </tr>
+              <tr>
+                <th>Discount Applied</th>
+                <td>{{ customer.discount_used }}</td>
+                <th>Payment Method</th>
+                <td>{{ customer.payment_method }}</td>
+              </tr>
+              <tr>
+                <th>Website Rating</th>
+                <td>{{ customer.website_rating }} / 5</td>
+                <th>Return Requested</th>
+                <td>{{ customer.return_requested }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>
+      <strong>SUBATHRA D &ndash; E-Commerce Customer Satisfaction Prediction</strong> &bull;
+      B.Sc Computer Science with Data Analytics Mini-Project
+    </p>
+  </footer>
+
+</body>
+</html>
